@@ -17,7 +17,7 @@ name: Build PR
 
 on:
   pull_request:
-    branches: [ "4.1"]
+    branches: ['4.1']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,18 +30,18 @@ env:
 
 jobs:
   verify-pr:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '8'
 
       # Cache .m2/repository
       - name: Cache local Maven repository
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         continue-on-error: true
         with:
           path: ~/.m2/repository
@@ -60,7 +60,7 @@ jobs:
         if: cancelled()
 
   build-pr-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     name: windows-x86_64-java11-boringssl
     needs: verify-pr
     steps:
@@ -69,12 +69,12 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '11'
 
       # Cache .m2/repository
       # Caching of maven dependencies
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         continue-on-error: true
         with:
           path: ~/.m2/repository
@@ -91,12 +91,12 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-windows-x86_64-java11-boringssl
           path: '**/target/surefire-reports/TEST-*.xml'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           name: build-pr-windows-target
@@ -107,7 +107,7 @@ jobs:
   build-pr-aarch64:
     name: linux-aarch64-verify-native
     # The host should always be Linux
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read  # for actions/checkout to fetch code
       packages: write  # for uraimo/run-on-arch-action to cache docker images
@@ -117,7 +117,7 @@ jobs:
 
       # Cache .m2/repository
       - name: Cache local Maven repository
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         continue-on-error: true
         with:
           path: ~/.m2/repository
@@ -154,28 +154,28 @@ jobs:
             JAVA_HOME=/usr/lib/jvm/java-11-openjdk-arm64 ./mvnw -B -ntp -pl testsuite-native -am clean package -DskipTests=true -Dcheckstyle.skip=true -DskipNativeTestsuite=false -Dtcnative.classifier=
 
   build-pr:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         include:
           - setup: linux-x86_64-java8
-            docker-compose-build: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.18.yaml build"
-            docker-compose-run: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.18.yaml run build-leak"
+            docker-compose-build: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.18.yaml build
+            docker-compose-run: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.18.yaml run build-leak
           - setup: linux-x86_64-java11
-            docker-compose-build: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml build"
-            docker-compose-run: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml run build-leak"
+            docker-compose-build: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml build
+            docker-compose-run: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml run build-leak
           - setup: linux-x86_64-java11-graal
-            docker-compose-build: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.graalvm111.yaml build"
-            docker-compose-run: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.graalvm111.yaml run build-leak"
+            docker-compose-build: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.graalvm111.yaml build
+            docker-compose-run: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.graalvm111.yaml run build-leak
           - setup: linux-x86_64-java17
-            docker-compose-build: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-7.117.yaml build"
-            docker-compose-run: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-7.117.yaml run build-leak"
+            docker-compose-build: -f docker/docker-compose.yaml -f docker/docker-compose.centos-7.117.yaml build
+            docker-compose-run: -f docker/docker-compose.yaml -f docker/docker-compose.centos-7.117.yaml run build-leak
           - setup: linux-x86_64-java21
-            docker-compose-build: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.21.yaml build"
-            docker-compose-run: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.21.yaml run build-leak"
+            docker-compose-build: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.21.yaml build
+            docker-compose-run: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.21.yaml run build-leak
           - setup: linux-x86_64-java11-boringssl
-            docker-compose-build: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml build"
-            docker-compose-run: "-f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml run build-leak-boringssl-static"
+            docker-compose-build: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml build
+            docker-compose-run: -f docker/docker-compose.yaml -f docker/docker-compose.centos-6.111.yaml run build-leak-boringssl-static
 
     name: ${{ matrix.setup }} build
     needs: verify-pr
@@ -184,7 +184,7 @@ jobs:
 
       # Cache .m2/repository
       - name: Cache local Maven repository
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         continue-on-error: true
         with:
           path: ~/.m2/repository
@@ -211,12 +211,12 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.setup }}
           path: '**/target/surefire-reports/TEST-*.xml'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           name: build-${{ matrix.setup }}-target
